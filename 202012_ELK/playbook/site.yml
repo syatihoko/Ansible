@@ -3,6 +3,7 @@
   - name: Install Java
     hosts: all
     tasks:
+      
       - name: Set facts for Java 8 vars #!!нужна 11 версия
         ansible.builtin.set_fact:   #Создаем новый факт, модуль с версии 2.10 рекомендуется писать с именем коллекции - ansible.builtin.
           java_home: "/opt/jdk/{{ java_jdk_version }}"  #В group_vars-all определена версия
@@ -82,4 +83,15 @@
           src: templates/elk.sh.j2
           dest: /etc/profile.d/elk.sh
           #backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
+        tags: elastic
+      - name: Create group for Elasticsearch
+        group: 
+          name: elasticsearch 
+          state: present
+        tags: elastic
+      - name: Add user for Elasticsearch
+        user:
+          name: elasticsearch
+          groups: elasticsearch 
+          shell: /bin/bash
         tags: elastic
