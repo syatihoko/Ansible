@@ -49,6 +49,17 @@
   - name: Install Elasticsearch
     hosts: elasticsearch
     tasks:
+      - name: Create group for Elasticsearch
+        group: 
+          name: elasticsearch 
+          state: present
+        tags: elastic
+      - name: Add user for Elasticsearch
+        user:
+          name: elasticsearch
+          groups: elasticsearch 
+          shell: /bin/bash
+        tags: elastic
       - name: Upload tar.gz Elasticsearch from remote URL
         get_url:  #Мы будем ставить через скачивание архива, а не через репозиторий.
           url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
@@ -72,6 +83,8 @@
           dest: "{{ elastic_home }}"
           extra_opts: [--strip-components=1]  #без этого параметра будет из  elastic_home: "/opt/elastic/{{ elastic_version }}"
           # мы получим /opt/elastic/7.10.1/elasticsearch-7.10.1/, а должно /opt/elastic/7.10.1/
+          owner: elasticsearch #who owner of files
+          group: elasticsearch
           creates: "{{ elastic_home }}/bin/elasticsearch"  #если этот файл существует, то мы этот Task
         tags:
           - skip_ansible_lint
@@ -83,23 +96,24 @@
           dest: /etc/profile.d/elk.sh
           #backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
         tags: elastic
-      - name: Create group for Elasticsearch
-        group: 
-          name: elasticsearch 
-          state: present
-        tags: elastic
-      - name: Add user for Elasticsearch
-        user:
-          name: elasticsearch
-          groups: elasticsearch 
-          shell: /bin/bash
-        tags: elastic
+
   #3.Следующий Play установки Kibana
   - name: Install Kibana
     hosts: kibana
     tasks:
+      - name: Create group for Kibana
+        group: 
+          name: kibana
+          state: present
+        tags: kibana
+      - name: Add user for Kibana
+        user:
+          name: kibana
+          groups: kibana
+          shell: /bin/bash
+        tags: kibana
       - name: Upload tar.gz Kibana from remote URL
-        get_url:  
+        get_url:
           url: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
           dest: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"  #если указать просто директорию без имени файла, то имя файла будет взято из source
           mode: 0755
@@ -120,6 +134,8 @@
           src: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
           dest: "{{ kibana_home }}"
           extra_opts: [--strip-components=1]  #удаляем 1 род. директорию при извлечении
+          owner: kibana
+          group: kibana
           creates: "{{ kibana_home }}/bin/kibana"  #если этот файл существует, то мы этот Task пропускаем
         tags:
           - skip_ansible_lint
@@ -129,15 +145,4 @@
         template:
           src: templates/kibana.sh.j2
           dest: /etc/profile.d/kibana.sh
-        tags: kibana
-      - name: Create group for Kibana
-        group: 
-          name: kibana
-          state: present
-        tags: kibana
-      - name: Add user for Kibana
-        user:
-          name: kibana
-          groups: kibana
-          shell: /bin/bash
         tags: kibana
