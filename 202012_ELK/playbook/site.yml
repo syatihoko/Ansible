@@ -32,6 +32,8 @@
           dest: "{{ java_home }}"  #куда разархивируем
           extra_opts: [--strip-components=1]  #поглотить корневой folder и распаковать на -1 вложеность
           creates: "{{ java_home }}/bin/java"  #если этот файл существует, то мы этот Task (распаковку) выполнять не будет
+          owner: root
+          groups: root
         tags:
           - skip_ansible_lint #Избежать проверки Таска ansible_lint (не особо тут нужен)
           #ansible_lint используется для анализа, что можно улучшить
@@ -41,6 +43,9 @@
         template:
           src: jdk.sh.j2  #Переопределяем переменные в j2, формируем файл
           dest: /etc/profile.d/jdk.sh #Сохраняет его по этому пути
+          owner: root
+          group: root
+          mode: 0644
           #при запуске любой сессии в bash вычитываются файлы из директории /etc/profile.d/,
           #тоесть если определить тут переменные то они будут у всех сессий при создании (в рамках данного пользователя)
           #если для всех вообще, то нужно писать /etc/environment
@@ -50,20 +55,21 @@
     hosts: elasticsearch
     tasks:
       - name: Create group for Elasticsearch
-        group: 
-          name: elasticsearch 
+        group:
+          name: elasticsearch
           state: present
         tags: elastic
       - name: Add user for Elasticsearch
         user:
           name: elasticsearch
-          groups: elasticsearch 
+          groups: elasticsearch
           shell: /bin/bash
         tags: elastic
       - name: Upload tar.gz Elasticsearch from remote URL
         get_url:  #Мы будем ставить через скачивание архива, а не через репозиторий.
           url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
-          dest: "/tmp/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"  #если указать просто директорию без имени файла, то имя файла будет взято из source
+          #если указать просто директорию без имени файла, то имя файла будет взято из source
+          dest: "/tmp/elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
           mode: 0755
           timeout: 60  #увеличиваем, так как 10 сек (по умолчанию) не хватает для скачки и будет ошибка
           force: true #принудительно..
@@ -74,6 +80,9 @@
         file:
           state: directory
           path: "{{ elastic_home }}"
+          owner: elasticsearch
+          group: elasticsearch
+          mode: 0755
         tags: elastic
       - name: Extract Elasticsearch in the installation directory
         become: true
@@ -85,6 +94,7 @@
           # мы получим /opt/elastic/7.10.1/elasticsearch-7.10.1/, а должно /opt/elastic/7.10.1/
           owner: elasticsearch #who owner of files
           group: elasticsearch
+          mode: 0755
           creates: "{{ elastic_home }}/bin/elasticsearch"  #если этот файл существует, то мы этот Task
         tags:
           - skip_ansible_lint
@@ -94,6 +104,7 @@
         template:
           src: templates/elk.sh.j2
           dest: /etc/profile.d/elk.sh
+          mode: 0644
           #backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
         tags: elastic
       - name: Create Elastic config
@@ -104,12 +115,16 @@
           backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
           owner: elasticsearch #who owner of files
           group: elasticsearch
+          mode: 0755
         tags: elastic
-      - name: Create Systemd unit file 
+      - name: Create Systemd unit file
         become: yes
         template:
           src: elasticsearch.service.j2
           dest: /etc/systemd/system/elasticsearch.service
+          owner: root
+          group: root
+          mode: 0644
         tags: elastic
       #- name: Start elasticsearch
       #  command: "{{ elastic_home }}/bin/elasticsearch"
@@ -135,7 +150,7 @@
     hosts: kibana
     tasks:
       - name: Create group for Kibana
-        group: 
+        group:
           name: kibana
           state: present
         tags: kibana
@@ -151,7 +166,7 @@
           dest: "/tmp/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"  #если указать просто директорию без имени файла, то имя файла будет взято из source
           mode: 0755
           timeout: 60  #увеличиваем, так как 10 сек (по умолчанию) не хватает для скачки и будет ошибка
-          force: true 
+          force: true
         register: get_kibana
         until: get_kibana is succeeded # пробуем, пока не скачается успешно (по умолчанию 3 раза)
         tags: kibana
@@ -159,6 +174,9 @@
         file:
           state: directory
           path: "{{ kibana_home }}"
+          owner: kibana
+          group: kibana
+          mode: 0755
         tags: kibana
       - name: Kibana Elasticsearch in the installation directory
         become: true
@@ -169,6 +187,7 @@
           extra_opts: [--strip-components=1]  #удаляем 1 род. директорию при извлечении
           owner: kibana
           group: kibana
+          mode: 0755
           creates: "{{ kibana_home }}/bin/kibana"  #если этот файл существует, то мы этот Task пропускаем
         tags:
           - skip_ansible_lint
@@ -178,6 +197,9 @@
         template:
           src: templates/kibana.sh.j2
           dest: /etc/profile.d/kibana.sh
+          owner: root
+          group: root
+          mode: 0644
         tags: kibana
       - name: Create Kibana config
         become: yes
@@ -187,13 +209,14 @@
           backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
           owner: kibana #who owner of files
           group: kibana
+          mode: 0755
 
   #4.Play установки Logstash
   - name: Install Logstash
     hosts: logstash
     tasks:
       - name: Create group for Logstash
-        group: 
+        group:
           name: logstash
           state: present
         tags: logstash
@@ -209,7 +232,9 @@
           dest: "/tmp/logstash-{{ logstash_version }}-linux-x86_64.tar.gz"  #если указать просто директорию без имени файла, то имя файла будет взято из source
           mode: 0755
           timeout: 60  #увеличиваем, так как 10 сек (по умолчанию) не хватает для скачки и будет ошибка
-          force: true 
+          force: true
+          owner: root
+          group: root
         register: get_logstash
         until: get_logstash is succeeded # пробуем, пока не скачается успешно (по умолчанию 3 раза)
         tags: logstash
@@ -217,6 +242,9 @@
         file:
           state: directory
           path: "{{ logstash_home }}"
+          owner: logstash
+          group: logstash
+          mode: 0755
         tags: logstash
       - name: logstash Elasticsearch in the installation directory
         become: true
@@ -227,6 +255,7 @@
           extra_opts: [--strip-components=1]  #удаляем 1 род. директорию при извлечении
           owner: logstash
           group: logstash
+          mode: 0755
           creates: "{{ logstash_home }}/bin/logstash"  #если этот файл существует, то мы этот Task пропускаем
         tags:
           - skip_ansible_lint
@@ -236,6 +265,9 @@
         template:
           src: templates/logstash.sh.j2
           dest: /etc/profile.d/logstash.sh
+          owner: root
+          group: root
+          mode: 0644
         tags: logstash
       - name: Create Logstash config
         become: yes
@@ -245,3 +277,4 @@
           backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
           owner: logstash #who owner of files
           group: logstash
+          mode: 0755

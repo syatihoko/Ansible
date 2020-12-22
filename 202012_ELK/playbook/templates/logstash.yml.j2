@@ -11,8 +11,7 @@ input {
 #Теперь укажем, куда будем передавать 
 output {
   elasticsearch {
-    #hosts => ["http://{{ hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address'] }}:9200"]
-    hosts => ["http://"{{ hostvars['elk_elasticsearch_1'] }}":9200"]
+    hosts => ["http://{{ hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address'] }}:9200"]
     index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
     #user => "elastic"
     #password => "changeme"
