@@ -96,6 +96,14 @@
           dest: /etc/profile.d/elk.sh
           #backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
         tags: elastic
+      - name: Create Elastic config
+        become: yes
+        template:
+          src: templates/elasticsearch.yml.j2
+          dest: "{{ elastic_home }}/config/elasticsearch.yml"
+          backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
+        tags: elastic
+
 
   #3.Следующий Play установки Kibana
   - name: Install Kibana

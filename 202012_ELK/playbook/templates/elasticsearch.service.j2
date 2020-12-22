@@ -1,0 +1,14 @@
+# Warning: This file is Ansible Managed, manual changes will be overwritten on next playbook run.
+#!/usr/bin/env bash
+[Unit]
+Description=ElasticSearch service
+After=network.target
+Requires=network-online.target
+[Service]
+User=elasticsearch
+Group=elasticsearch
+ExecStart={{ elastic_home }}/bin/elasticsearch
+Restart=Always
+
+[Install]
+WantedBy=multi-user.target

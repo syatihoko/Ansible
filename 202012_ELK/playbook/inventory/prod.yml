@@ -11,3 +11,8 @@
       elk_kibana_1:
         ansible_connection: docker
         ansible_user: root
+  logstash:
+    hosts:
+      elk_logstash_1:
+        ansible_connection: docker
+        ansible_user: root
