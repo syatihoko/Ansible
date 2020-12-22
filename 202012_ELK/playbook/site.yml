@@ -102,7 +102,28 @@
           src: templates/elasticsearch.yml.j2
           dest: "{{ elastic_home }}/config/elasticsearch.yml"
           backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
+          owner: elasticsearch #who owner of files
+          group: elasticsearch
         tags: elastic
+      - name: Create Systemd unit file 
+        become: yes
+        template:
+          src: elasticsearch.service.j2
+          dest: /etc/systemd/system/elasticsearch.service
+        tags: elastic
+        -name: Restart service daemon-reload #чтобы обнаружился новый unit
+          service:
+            name: daemon-reload
+            state: restarted
+          retries: 3
+          delay: 10
+        -name: Start service elasticsearch
+          service:
+            name: elasticsearch
+            state: started
+            enabled: yes
+          retries: 3
+          delay: 10
 
 
   #3.Следующий Play установки Kibana
