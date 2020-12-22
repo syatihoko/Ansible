@@ -1,0 +1,17 @@
+---
+  #1.Facts test
+  - name: TEST FACTS ALL
+    hosts: elasticsearch
+    tasks:
+        - debug: var=hostvars[inventory_hostname]['ansible_default_ipv4']['address']
+        - debug: var=hostvars[inventory_hostname]['ansible_default_ipv6']['address']
+        - debug: var=hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address']
+#            msg: "{{ hostvars[elk_elasticsearch_1]['ansible_facts']['eth0']['ipv4']['address'] }}"
+
+  #4. Logstash
+  - name: Install Logstash
+    hosts: logstash
+    tasks:
+        - debug: var=hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address']
+        - debug: var=hostvars['elk_elasticsearch_1']['ansible_default_ipv4']
+#            msg: "{{ hostvars[elk_elasticsearch_1]['ansible_facts']['eth0']['ipv4']['address'] }}"

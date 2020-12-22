@@ -1,0 +1,5 @@
+# Warning: This file is Ansible Managed, manual changes will be overwritten on next playbook run.
+#!/usr/bin/env bash
+
+server.host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" #ip-address pc
+

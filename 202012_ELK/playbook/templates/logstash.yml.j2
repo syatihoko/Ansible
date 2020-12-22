@@ -1,0 +1,39 @@
+# Warning: This file is Ansible Managed, manual changes will be overwritten on next playbook run.
+#!/usr/bin/env bash
+
+#Прием информации с beats агентов.
+input {
+  beats {
+    port => 5044
+  }
+}
+
+#Теперь укажем, куда будем передавать 
+output {
+  elasticsearch {
+    #hosts => ["http://{{ hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address'] }}:9200"]
+    hosts => ["http://"{{ hostvars['elk_elasticsearch_1'] }}":9200"]
+    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+    #user => "elastic"
+    #password => "changeme"
+  }
+}
+
+
+#описание обработки данных
+#парсит логи nginx с помощью grok
+#filter {
+# if [type] == "nginx_access" {  
+#    grok {
+#        match => { "message" => "%{IPORHOST:remote_ip} - %{DATA:user} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\"" }
+#    }
+#  }
+#  date {
+#        match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+#  }
+#  geoip {
+#         source => "remote_ip"
+#         target => "geoip"
+#         add_tag => [ "nginx-geoip" ]
+#  }
+#}

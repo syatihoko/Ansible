@@ -111,19 +111,23 @@
           src: elasticsearch.service.j2
           dest: /etc/systemd/system/elasticsearch.service
         tags: elastic
-        -name: Restart service daemon-reload #чтобы обнаружился новый unit
-          service:
-            name: daemon-reload
-            state: restarted
-          retries: 3
-          delay: 10
-        -name: Start service elasticsearch
-          service:
-            name: elasticsearch
-            state: started
-            enabled: yes
-          retries: 3
-          delay: 10
+      #- name: Start elasticsearch
+      #  command: "{{ elastic_home }}/bin/elasticsearch"
+      #- name: Start service elasticsearch
+      #  service:
+      #    name: elasticsearch
+      #    state: started
+      #  retries: 3
+      #  delay: 10
+      #systemd doesn't work for docker
+      #- name: Start service elasticsearch
+      #  systemd:
+      #    daemon_reload: yes    #чтобы обнаружился новый unit
+      #    name: elasticsearch
+      #    state: started
+      #    enabled: yes
+      #  retries: 3
+      #  delay: 10
 
 
   #3.Следующий Play установки Kibana
@@ -175,10 +179,18 @@
           src: templates/kibana.sh.j2
           dest: /etc/profile.d/kibana.sh
         tags: kibana
+      - name: Create Kibana config
+        become: yes
+        template:
+          src: templates/kibana.yml.j2
+          dest: "{{ kibana_home }}/config/kibana.yml"
+          backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
+          owner: kibana #who owner of files
+          group: kibana
 
   #4.Play установки Logstash
   - name: Install Logstash
-    hosts: Logstash
+    hosts: logstash
     tasks:
       - name: Create group for Logstash
         group: 
@@ -204,7 +216,7 @@
       - name: Create directrory for Logstash
         file:
           state: directory
-          path: "{{ logstasha_home }}"
+          path: "{{ logstash_home }}"
         tags: logstash
       - name: logstash Elasticsearch in the installation directory
         become: true
@@ -225,3 +237,11 @@
           src: templates/logstash.sh.j2
           dest: /etc/profile.d/logstash.sh
         tags: logstash
+      - name: Create Logstash config
+        become: yes
+        template:
+          src: templates/logstash.yml.j2
+          dest: "{{ logstash_home }}/config/logstash.yml"
+          backup: true #каждый раз, когда конфиг будет меняться, он будет делать бэкап предыдущей версии в тойже директории.
+          owner: logstash #who owner of files
+          group: logstash

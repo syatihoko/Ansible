@@ -1,5 +1,16 @@
 # Warning: This file is Ansible Managed, manual changes will be overwritten on next playbook run.
 #!/usr/bin/env bash
 
-cluster.name: "docker-cluster"
-network.host: 0.0.0.0
+cluster.name: "elk_elastic-cluster"
+
+#path.data:  # директория для хранения данных
+
+
+#IP берем из фактов
+#network.host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" # слушаем имеющийся IP-адрес
+
+#для прослушивания снаружи
+#https://stackoverflow.com/questionXms/41260571/elasticsearch-wont-start-when-binding-to-anything-but-localhost-node-validatio
+network.host: 127.0.0.1 
+http.host: 0.0.0.0
+
