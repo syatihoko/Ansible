@@ -1,5 +1,9 @@
 # Warning: This file is Ansible Managed, manual changes will be overwritten on next playbook run.
 #!/usr/bin/env bash
 
+#kibana listen adddress
 server.host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" #ip-address pc
+
+#elasticsearch ip address
+elasticsearch.hosts:  ["http://{{ hostvars['elk_elasticsearch_1']['ansible_default_ipv4']['address'] }}:9200"]
 
