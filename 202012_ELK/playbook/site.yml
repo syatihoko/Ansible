@@ -116,7 +116,9 @@
           owner: elasticsearch #who owner of files
           group: elasticsearch
           mode: 0755
-        tags: elastic
+        tags:
+          - elastic
+          - config
       - name: Create Systemd unit file
         become: yes
         template:
@@ -125,7 +127,9 @@
           owner: root
           group: root
           mode: 0644
-        tags: elastic
+        tags:
+          - elastic
+          - service
       #- name: Start elasticsearch
       #  command: "{{ elastic_home }}/bin/elasticsearch"
       #- name: Start service elasticsearch
@@ -200,7 +204,9 @@
           owner: root
           group: root
           mode: 0644
-        tags: kibana
+        tags:
+          - kibana
+          - config
       - name: Create Kibana config
         become: yes
         template:
@@ -278,3 +284,6 @@
           owner: logstash #who owner of files
           group: logstash
           mode: 0755
+        tags:
+          - logstash
+          - config
