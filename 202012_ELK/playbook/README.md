@@ -8,12 +8,12 @@
 
 
 
-| Group of variables           | Variable value                                               |
-| ---------------------------- | ------------------------------------------------------------ |
-| group_vars/all/vars          | java_jdk_version - version of JDK (default 11.0.9)           |
-| group_vars/all/elasticsearch | elastic_version: - version of Elasticsearch (default 7.10.1) |
-| group_vars/all/kibana        | kibana_version: - version of Kibana (default 7.10.1)         |
-| group_vars/all/logstash      | logstash_version: - version of Logstash(default 7.10.1)      |
+| Group of variables           | Variable                | Variables value      
+| ---------------------------- | ----------------------- |------------------------------------------ |
+| group_vars/all/vars          | java_jdk_version        | version of JDK (default 11.0.9)           |
+| group_vars/all/elasticsearch | elastic_version         | version of Elasticsearch (default 7.10.1) |
+| group_vars/all/kibana        | kibana_version          | version of Kibana (default 7.10.1)        |
+| group_vars/all/logstash      | logstash_version        | version of Logstash(default 7.10.1)       |
 
 ​           
 
